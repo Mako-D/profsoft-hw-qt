@@ -2,76 +2,71 @@
 #include <QRandomGenerator>
 #include <QPushButton>
 #include <QPalette>
+#include <QBoxLayout>
 
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+// === GAME SETTINGS ===
+constexpr int deltaY = 3;
+constexpr int buttonSizeX = 20;
+constexpr int buttonSizeY = 20;
+constexpr int timerMovePbMax = 250;
+constexpr int timerMovePbMin = 120;
+constexpr int timerInitPbMax = 1000;
+constexpr int timerInitPbMin = 100;
+constexpr int spawnPbHeight = 100;
+constexpr int multiplySpeedThenUnderMouse = 2;
+// =====================
+
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     resize(300, 600);
 
-    // If you use Qt5, may you need to change next line to "ui->setupUi(this);"
-    ui.setupUi(this);
-
     auto tm = new QTimer(this);
-    tm->setSingleShot(true);
 
     connect(tm, &QTimer::timeout,
         [this, tm]()
         {
-            // === GAME SETTINGS ===
-            int deltaY = 3;
-            int buttonSizeX = 20;
-            int buttonSizeY = 20;
-            int timerMovePbMax = 250;
-            int timerMovePbMin = 120;
-            int timerInitPbMax = 1000;
-            int timerInitPbMin = 100;
-            int spawnPbHeight = 100;
-            int increaseSpeedThenUnderMouse = 2;
-            // =====================
 
             auto pb = new QPushButton(this);
             auto tmButton = new QTimer(pb);
 
             pb->setGeometry(
-                QRandomGenerator::global()->bounded(0, this->height()),
+                QRandomGenerator::global()->bounded(0, width()),
                 spawnPbHeight,
                 buttonSizeX,
                 buttonSizeY
             );
             pb->show();
-            connect(tmButton, &QTimer::timeout, 
-                [pb, deltaY, increaseSpeedThenUnderMouse, this]() 
-                {    
-                    if (pb->y() > this->height())
+            connect(tmButton, &QTimer::timeout,
+                [pb, this]()
+                {
+                    if (pb->y() > height())
                     {
                         QPalette pal = QPalette();
                         pal.setColor(QPalette::Window, Qt::red);
 
-                        this->setAutoFillBackground(true);
-                        this->setPalette(pal);
-                        this->setWindowTitle("You Loose!");
+                        setAutoFillBackground(true);
+                        setPalette(pal);
+                        setWindowTitle("You Loose!");
                     }
                     pb->setGeometry(
-                        pb->x(), 
-                        pb->y() + deltaY * (pb->underMouse() ? increaseSpeedThenUnderMouse : 1),
-                        pb->width(), 
+                        pb->x(),
+                        pb->y() + deltaY * (pb->underMouse() ? multiplySpeedThenUnderMouse : 1),
+                        pb->width(),
                         pb->height()
-                    );  
+                    );
                 }
             );
-            connect(pb, &QPushButton::clicked,
-                [pb]() {   pb->deleteLater();  }
-            );
+            connect(pb, &QPushButton::clicked, pb, &QPushButton::deleteLater);
 
-            tmButton->start(timerMovePbMin + QRandomGenerator::global()->bounded(timerMovePbMax - timerMovePbMin));
-
+            tmButton->start(QRandomGenerator::global()->bounded(timerMovePbMin, timerMovePbMax));
             tm->setInterval(QRandomGenerator::global()->bounded(timerInitPbMin, timerInitPbMax));
-            tm->start();
         }
     );
     tm->start();
+
 }
 
 MainWindow::~MainWindow()
