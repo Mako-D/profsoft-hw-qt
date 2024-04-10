@@ -45,11 +45,12 @@ Window {
                 repeat: true
                 running: true
                 onTriggered: {
-                    btn.y += buttonStandardStep * btn.hovered ? buttonMultiplyStepByHovered : 1
-                    if(btn.y > appWindow.height)
+                    btn.y += buttonStandardStep * ( btn.hovered ? buttonMultiplyStepByHovered : 1 )
+                    if(btn.y > appWindow.height - btn.height)
                     {
                         appWindow.color = "red"
                         appWindow.title = "You Loose!"
+                        btn.destroy()
                     }
                 }
             }
